@@ -1,2 +1,12 @@
-<h1>Orders#new</h1>
-<p>Find me in app/views/orders/new.html.erb</p>
+<h1>New Order</h1>
+
+<%= form_with model: @order do |f| %>
+  <div>
+    <%= f.label :description %>
+    <%= f.text_field :description %>
+  </div>
+  <br>
+  <div>
+    <%= f.submit "Place Order" %>
+  </div>
+<% end %>
