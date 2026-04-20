@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "shopify.ruby-lsp",
+    "misogi.ruby-rubocop",
+    "rebornix.Ruby",
+    "castwide.solargraph",
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "GitHub.copilot",
+    "eamodio.gitlens",
+    "ms-azuretools.vscode-docker"
+  ]
+}

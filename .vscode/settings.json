@@ -1,0 +1,22 @@
+{
+  "ruby.lsp.enablement": true,
+  "ruby.lint": {
+    "rubocop": true
+  },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "misogi.ruby-rubocop",
+  "[ruby]": {
+    "editor.defaultFormatter": "misogi.ruby-rubocop",
+    "editor.formatOnSave": true
+  },
+  "[erb]": {
+    "editor.formatOnSave": false
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/.git": true,
+    "**/tmp": true,
+    "**/log": true
+  }
+}

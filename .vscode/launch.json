@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "rdbg",
+      "name": "Rails server",
+      "request": "launch",
+      "command": "bin/rails",
+      "script": "server",
+      "args": ["-p", "3000"],
+      "askParameters": false
+    },
+    {
+      "type": "rdbg",
+      "name": "Karafka Server",
+      "request": "launch",
+      "command": "bin/karafka",
+      "script": "server",
+      "askParameters": false
+    }
+  ]
+}
