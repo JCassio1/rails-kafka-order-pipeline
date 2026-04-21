@@ -62,7 +62,6 @@ config/database.yml
 coverage/
 
 # Editor files
-.vscode/
 .idea/
 *.swp
 
