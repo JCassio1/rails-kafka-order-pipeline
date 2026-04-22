@@ -63,3 +63,6 @@ coverage/
 .idea/
 *.swp
 
+
+/app/assets/builds/*
+!/app/assets/builds/.keep
