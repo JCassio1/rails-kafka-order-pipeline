@@ -52,8 +52,6 @@ storage/*
 config/database.yml
 
 # Environment variables
-.env
-.env.*
 
 # macOS junk
 .DS_Store
