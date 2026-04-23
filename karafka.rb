@@ -1,6 +1,6 @@
 class KarafkaApp < Karafka::App
   setup do |config|
-    config.kafka = { 'bootstrap.servers': '127.0.0.1:9092' }
+    config.kafka = { 'bootstrap.servers': ENV.fetch('KAFKA_BROKERS', 'kafka:29092') }
     config.client_id = 'event_app'
   end
 

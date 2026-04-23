@@ -41,10 +41,49 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
       interval: 10s
       timeout: 5s
       retries: 5
+
+  rails:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    ports:
+      - '3000:3000'
+    environment:
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@postgres:5432/event_app_development}
+    volumes:
+      - .:/rails
+    command: bash -c "rails db:prepare && rails server -b 0.0.0.0"
+
+  karafka:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      kafka:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: ${DB_HOST:-postgres}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@postgres:5432/event_app_development}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka:29092}
+    volumes:
+      - .:/rails
+    command: bundle exec karafka server
 
 volumes:
   postgres_data:
