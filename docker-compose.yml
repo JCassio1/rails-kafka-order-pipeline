@@ -57,6 +57,7 @@ services:
         condition: service_started
     ports:
       - '3000:3000'
+    restart: on-failure
     environment:
       DB_HOST: ${DB_HOST:-postgres}
       DB_USER: ${DB_USER:-postgres}
@@ -81,6 +82,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-postgres}
       DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@postgres:5432/event_app_development}
       KAFKA_BROKERS: ${KAFKA_BROKERS:-kafka:29092}
+    restart: on-failure
     volumes:
       - .:/rails
     command: bundle exec karafka server
