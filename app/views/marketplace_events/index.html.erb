@@ -1,0 +1,24 @@
+<h1 class="text-2xl font-bold mb-4">Marketplace Events</h1>
+
+<% if @events.any? %>
+  <div class="grid gap-4 w-full max-w-2xl">
+    <% @events.each do |event| %>
+      <%= render RubyUI::Card.new do %>
+        <%= render RubyUI::CardHeader.new do %>
+          <%= render RubyUI::CardTitle.new do %>
+            <%= event.topic %>
+          <% end %>
+          <%= render RubyUI::CardDescription.new do %>
+            <%= event.created_at.strftime("%Y-%m-%d %H:%M:%S") %>
+          <% end %>
+        <% end %>
+
+        <%= render RubyUI::CardContent.new do %>
+          <pre class="text-sm overflow-x-auto"><%= JSON.pretty_generate(event.payload) %></pre>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <p class="text-gray-500">No marketplace events yet. Run <code>rails kafka:seed_events</code>.</p>
+<% end %>

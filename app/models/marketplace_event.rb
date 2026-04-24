@@ -1,0 +1,2 @@
+class MarketplaceEvent < ApplicationRecord
+end

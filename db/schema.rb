@@ -10,14 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_14_213018) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_24_201000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
-  create_table "orders", force: :cascade do |t|
+  create_table "marketplace_events", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.string "description"
-    t.string "status"
+    t.string "event_type", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.string "topic", null: false
     t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_marketplace_events_on_created_at"
+    t.index ["event_type"], name: "index_marketplace_events_on_event_type"
+    t.index ["topic"], name: "index_marketplace_events_on_topic"
   end
 end
