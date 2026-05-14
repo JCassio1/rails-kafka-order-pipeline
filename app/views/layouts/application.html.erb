@@ -24,8 +24,14 @@
   </head>
 
   <body>
-    <main class="container mx-auto mt-28 px-5 flex">
-      <%= yield %>
-    </main>
+    <% if controller_name == "marketplace_events" && action_name == "index" %>
+      <main style="width:100vw;height:100vh;overflow:hidden;margin:0;padding:0;display:block;">
+        <%= yield %>
+      </main>
+    <% else %>
+      <main class="container mx-auto mt-28 px-5 flex">
+        <%= yield %>
+      </main>
+    <% end %>
   </body>
 </html>
