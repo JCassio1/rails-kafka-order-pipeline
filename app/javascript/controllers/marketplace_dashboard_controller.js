@@ -1,7 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-import { Chart, registerables } from "chart.js"
-
-Chart.register(...registerables)
 
 export default class extends Controller {
   static targets = [
@@ -23,16 +20,12 @@ export default class extends Controller {
   }
 
   connect() {
-    this.ordersChart = null
-    this.distributionChart = null
     this.poll()
     this.timer = setInterval(() => this.poll(), this.intervalValue)
   }
 
   disconnect() {
     if (this.timer) clearInterval(this.timer)
-    if (this.ordersChart) this.ordersChart.destroy()
-    if (this.distributionChart) this.distributionChart.destroy()
   }
 
   async poll() {
@@ -92,68 +85,89 @@ export default class extends Controller {
   }
 
   renderOrdersChart(series) {
-    const ctx = this.ordersChartTarget.getContext("2d")
-    const dataset = {
-      labels: series.labels || [],
-      datasets: [
-        {
-          label: "Orders",
-          data: series.order_counts || [],
-          borderColor: "#b73e2f",
-          backgroundColor: "rgba(183, 62, 47, 0.2)",
-          tension: 0.3,
-          fill: true
-        }
-      ]
-    }
+    const labels = series.labels || []
+    const values = (series.order_counts || []).map((v) => Number(v || 0))
 
-    if (this.ordersChart) {
-      this.ordersChart.data = dataset
-      this.ordersChart.update()
+    if (values.length === 0 || values.every((n) => Number(n) === 0)) {
+      this.ordersChartTarget.innerHTML = "<div class='chart-empty'>No order volume yet</div>"
       return
     }
 
-    this.ordersChart = new Chart(ctx, {
-      type: "line",
-      data: dataset,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } }
-      }
-    })
+    const max = Math.max(...values, 1)
+    const min = Math.min(...values)
+    const range = Math.max(max - min, 1)
+    const bars = values
+      .map((value, idx) => {
+        // Stretch small deltas so adjacent counts remain visible.
+        const normalized = ((value - min) / range) * 0.84 + 0.12
+        const height = Math.max(8, Math.round(normalized * 100))
+        const label = labels[idx] || `T${idx + 1}`
+        return `
+          <div class="bar-col" title="${label}: ${value} orders">
+            <div class="bar-track">
+              <div class="bar" style="height:${height}%"></div>
+            </div>
+            <span class="bar-value">${value}</span>
+            <span class="bar-label">${label}</span>
+          </div>
+        `
+      })
+      .join("")
+
+    this.ordersChartTarget.innerHTML = `
+      <div class="orders-chart">
+        <div class="orders-bars">${bars}</div>
+      </div>
+    `
   }
 
   renderDistributionChart(rows) {
-    const ctx = this.distributionChartTarget.getContext("2d")
-    const data = {
-      labels: rows.map((row) => row.topic),
-      datasets: [
-        {
-          data: rows.map((row) => row.count),
-          backgroundColor: ["#b73e2f", "#d46a53", "#e28f6a", "#9d3c2d"],
-          borderWidth: 0
-        }
-      ]
-    }
+    const total = rows.reduce((sum, row) => sum + Number(row.count || 0), 0)
 
-    if (this.distributionChart) {
-      this.distributionChart.data = data
-      this.distributionChart.update()
+    if (total <= 0) {
+      this.distributionChartTarget.innerHTML = "<div class='chart-empty'>No topic events yet</div>"
       return
     }
 
-    this.distributionChart = new Chart(ctx, {
-      type: "doughnut",
-      data: data,
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: "bottom" }
-        }
+    let current = 0
+    const colors = ["#b73e2f", "#d46a53", "#e28f6a", "#9d3c2d"]
+
+    const slices = rows.map((row, idx) => {
+      const value = Number(row.count || 0)
+      const portion = (value / total) * 100
+      const start = current
+      const end = current + portion
+      current = end
+      return {
+        topic: row.topic,
+        count: value,
+        start,
+        end,
+        color: colors[idx % colors.length]
       }
     })
+
+    const gradient = slices.map((s) => `${s.color} ${s.start}% ${s.end}%`).join(", ")
+    const legend = slices
+      .map((s) => {
+        return `
+          <li class="dist-legend-item">
+            <span class="dist-dot" style="background:${s.color}"></span>
+            <span class="dist-topic">${s.topic}</span>
+            <span class="dist-count">${s.count}</span>
+          </li>
+        `
+      })
+      .join("")
+
+    this.distributionChartTarget.innerHTML = `
+      <div class="dist-wrap">
+        <div class="dist-donut" style="background: conic-gradient(${gradient})">
+          <div class="dist-hole">${total}</div>
+        </div>
+        <ul class="dist-legend">${legend}</ul>
+      </div>
+    `
   }
 
   renderRecentOrders(orders) {

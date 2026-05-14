@@ -199,6 +199,11 @@
       flex: 1;
     }
 
+    .orders-panel .panel-body,
+    .distribution-panel .panel-body {
+      min-height: 220px;
+    }
+
     .feed-list {
       list-style: none;
       margin: 0;
@@ -346,10 +351,149 @@
       line-height: 1;
     }
 
-    .chart-canvas {
-      width: 100% !important;
-      height: 100% !important;
-      display: block;
+    .chart-host {
+      width: 100%;
+      height: 100%;
+      min-height: 220px;
+    }
+
+    .chart-empty {
+      height: 100%;
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      color: #7d5b4e;
+      font-weight: 600;
+      border: 1px dashed rgba(157, 108, 90, 0.45);
+      border-radius: 10px;
+      background: rgba(255, 248, 243, 0.5);
+    }
+
+    .orders-chart {
+      height: 100%;
+      min-height: 220px;
+      border: 1px solid rgba(157, 108, 90, 0.34);
+      border-radius: 10px;
+      background: rgba(255, 248, 243, 0.52);
+      padding: 8px 8px 10px;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .orders-bars {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(24px, 1fr);
+      gap: 6px;
+      align-items: stretch;
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .bar-col {
+      min-width: 24px;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto auto;
+      gap: 3px;
+      min-height: 0;
+    }
+
+    .bar-track {
+      height: 100%;
+      min-height: 120px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .bar {
+      width: 100%;
+      background: linear-gradient(180deg, #d46a53 0%, #b73e2f 100%);
+      border-radius: 6px 6px 0 0;
+      min-height: 8px;
+    }
+
+    .bar-value {
+      text-align: center;
+      font-size: 0.72rem;
+      color: #7f4d3f;
+      line-height: 1;
+    }
+
+    .bar-label {
+      text-align: center;
+      font-size: 0.67rem;
+      color: #8c6658;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .dist-wrap {
+      height: 100%;
+      min-height: 220px;
+      display: grid;
+      grid-template-columns: minmax(120px, 170px) minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+
+    .dist-donut {
+      width: clamp(108px, 9.2vw, 148px);
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin: 0 auto;
+    }
+
+    .dist-hole {
+      width: 56%;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #6a372d;
+      background: rgba(255, 248, 243, 0.95);
+      border: 1px solid rgba(157, 108, 90, 0.3);
+    }
+
+    .dist-legend {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .dist-legend-item {
+      display: grid;
+      grid-template-columns: 12px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.86rem;
+      color: #5c4137;
+    }
+
+    .dist-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dist-topic {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dist-count {
+      font-weight: 700;
+      color: #7b2d22;
     }
 
     @media (max-width: 1300px) {
@@ -419,6 +563,10 @@
         flex-wrap: wrap;
         justify-content: flex-end;
       }
+
+      .dist-wrap {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 <% end %>
@@ -473,7 +621,7 @@
             </div>
           </div>
           <div class="panel-body">
-            <canvas class="chart-canvas" data-marketplace-dashboard-target="ordersChart"></canvas>
+            <div class="chart-host" data-marketplace-dashboard-target="ordersChart"></div>
           </div>
         </div>
       </section>
@@ -547,7 +695,7 @@
             <h2 class="panel-title">Topic Distribution</h2>
           </div>
           <div class="panel-body">
-            <canvas class="chart-canvas" data-marketplace-dashboard-target="distributionChart"></canvas>
+            <div class="chart-host" data-marketplace-dashboard-target="distributionChart"></div>
           </div>
         </div>
       </section>
