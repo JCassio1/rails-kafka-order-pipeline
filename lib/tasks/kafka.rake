@@ -1,10 +1,14 @@
 namespace :kafka do
   desc "Seed realistic marketplace events into Kafka (use EVENTS, DELAY_MS, USER_POOL, LISTING_POOL env vars)"
   task seed_events: :environment do
+    require "timeout"
+    $stdout.sync = true
+
     total_events = ENV.fetch("EVENTS", "120").to_i.clamp(1, 10_000)
     delay_seconds = (ENV.fetch("DELAY_MS", "25").to_i.clamp(0, 5_000) / 1000.0)
     user_pool_size = ENV.fetch("USER_POOL", "80").to_i.clamp(5, 20_000)
     listing_pool_size = ENV.fetch("LISTING_POOL", "160").to_i.clamp(10, 50_000)
+    publish_timeout_seconds = ENV.fetch("PUBLISH_TIMEOUT", "10").to_i.clamp(2, 60)
 
     user_ids = (10_001...(10_001 + user_pool_size)).to_a
     listing_ids = (20_001...(20_001 + listing_pool_size)).to_a
@@ -86,7 +90,10 @@ namespace :kafka do
         }
       end
 
-      MarketplaceEventProducer.call(topic: topic, payload: payload)
+      puts "Publishing #{index + 1}/#{total_events} -> #{topic}"
+      Timeout.timeout(publish_timeout_seconds) do
+        MarketplaceEventProducer.call(topic: topic, payload: payload)
+      end
       topic_counts[topic] += 1
 
       if ((index + 1) % 20).zero? || index == total_events - 1
@@ -94,6 +101,9 @@ namespace :kafka do
       end
 
       sleep(delay_seconds) if delay_seconds.positive?
+    rescue Timeout::Error
+      warn "Timed out publishing event #{index + 1} after #{publish_timeout_seconds}s. Check Kafka connectivity."
+      raise
     end
 
     puts "Done. Published #{total_events} events."
