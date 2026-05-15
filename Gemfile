@@ -16,6 +16,7 @@ gem "turbo-rails"
 gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
+gem "net-imap", ">= 0.6.4"
 
 # Manages all kafka instances
 gem "karafka", "~> 2.3"
