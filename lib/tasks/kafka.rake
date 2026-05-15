@@ -19,10 +19,10 @@ namespace :kafka do
     review_id = 40_000
 
     weighted_topics = [
-      ["listing.viewed", 40],
-      ["order.placed", 30],
-      ["user.signed_up", 20],
-      ["review.submitted", 10]
+      [ "listing.viewed", 40 ],
+      [ "order.placed", 30 ],
+      [ "user.signed_up", 20 ],
+      [ "review.submitted", 10 ]
     ].freeze
 
     plan_tiers = %w[starter pro business].freeze

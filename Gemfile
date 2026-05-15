@@ -18,7 +18,7 @@ gem "stimulus-rails"
 gem "jbuilder"
 
 # Manages all kafka instances
-gem 'karafka', '~> 2.3'
+gem "karafka", "~> 2.3"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
@@ -68,7 +68,7 @@ group :test do
   gem "selenium-webdriver"
 end
 
-gem "ruby_ui", "~> 1.1", :group => :development, :require => false
+gem "ruby_ui", "~> 1.1", group: :development, require: false
 
 gem "phlex-rails", "~> 2.4"
 
