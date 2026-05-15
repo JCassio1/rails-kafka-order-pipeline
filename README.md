@@ -1,16 +1,36 @@
 # Event Stream Dashboard
 
-![Ruby](https://img.shields.io/badge/Ruby-3.4.1-red) ![Rails](https://img.shields.io/badge/Rails-8.1.3-red) ![Kafka](https://img.shields.io/badge/Kafka-7.5.0-black) ![Docker](https://img.shields.io/badge/Docker-Compose-blue)
+![Ruby](https://img.shields.io/badge/Ruby-3.4.1-red)
+![Rails](https://img.shields.io/badge/Rails-8.1.3-red)
+![Kafka](https://img.shields.io/badge/Kafka-7.5.0-black)
+![Docker](https://img.shields.io/badge/Docker-Compose-blue)
 
----
+![App Dashboard](app/assets/images/app-dashboard.png)
 
-## So.. What is this?
+## Overview
 
-This is a focused proof of concept designed for a proposal of event-driven architecture before implementing in a production environment.
+This project is a proof-of-concept for an event-driven marketplace pipeline.
 
-A script generates marketplace events (user signups, listing views, reviews) which flow through Kafka, get processed by a Karafka consumer, persisted to Postgres and displayed on a dashboard that updates every 2 seconds.
+I designed and implemented a small end-to-end system where marketplace events are published to Kafka, consumed with Karafka, persisted in Postgres, and visualized in a live dashboard.
 
----
+Tracked topics:
+
+- `user.signed_up`
+- `listing.viewed`
+- `order.placed`
+- `review.submitted`
+
+**Note:** While this implementation uses Rails, the core event-driven architecture patterns (Kafka producers, consumers, event persistence, and aggregation queries) are **framework-agnostic** and can be adapted to any backend architecture—Node.js, Python, Go, Java, etc. The principles of event publishing, consumption, and stream processing are language and framework independent.
+
+## My Role
+
+I owned the implementation across backend, data flow, and UI:
+
+- Built Kafka producer + Karafka consumer flow
+- Implemented event persistence and dashboard aggregation endpoints
+- Built a real-time dashboard UI with auto-refresh behavior
+- Containerized runtime with Docker Compose (`rails`, `karafka`, `kafka`, `postgres`, `redpanda-console`)
+- Added data-seeding tooling to simulate realistic event traffic
 
 ## Architecture
 
@@ -22,29 +42,31 @@ A script generates marketplace events (user signups, listing views, reviews) whi
 
 ![Event Flow Diagram](app/assets/images/plain-sequence-diagram.png)
 
-
----
-
 ## Tech Stack
 
 | Technology | Role |
 |---|---|
-| **Ruby on Rails** | Backend API and dashboard |
-| **Karafka** | Ruby client for consuming Kafka events |
-| **Apache Kafka** | Stores all events across topics |
-| **Redpanda Console** | UI for inspecting Kafka topics and messages |
-| **Postgres** | Persistent storage for processed events |
-| **Docker Compose** | Runs the entire stack with a single command |
+| Ruby on Rails | Dashboard UI + server-side aggregation API |
+| Karafka | Kafka consumer runtime |
+| Apache Kafka | Event transport and log storage |
+| Postgres | Persisted consumed events |
+| Redpanda Console | Kafka topic/message inspection |
+| Docker Compose | Local orchestration |
 
----
+## Key Decisions and Tradeoffs
 
-## Getting Started
+- **Polling over push for v1**: Dashboard refreshes every 3 seconds via JSON polling for lower implementation complexity.
+- **Single event store table**: Fast to ship and easy to query; schema kept simple for POC speed.
+- **Consumer-first persistence**: Events are stored after consume; feed "pending" state is currently inferred in UI, not persisted.
+- **Docker-first local setup**: Reduces machine-specific dependency issues and keeps runtime reproducible.
+
+## Running Locally
 
 ### Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- That's it.
 
-### Run the app
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+### Start the stack
 
 ```bash
 git clone https://github.com/yourname/event-stream-dashboard
@@ -55,38 +77,69 @@ docker compose up --build
 | Service | URL |
 |---|---|
 | Dashboard | http://localhost:3000 |
-| Redpanda Console (Kafka UI) | http://localhost:8080 |
+| Redpanda Console | http://localhost:8080 |
 
----
+## Generating Event Traffic
 
-## Simulating Events
-
-Once the stack is running, generate fake events with:
+Publish simulated marketplace traffic into Kafka:
 
 ```bash
 docker compose exec rails rails kafka:seed_events
 ```
 
-This publishes a batch of fake `user.signed_up`, `listing.viewed`, `order.placed`, and `review.submitted` events into Kafka. Watch the dashboard update in real time as Karafka consumes and processes them.
+You can tune volume and speed:
 
----
-
-## Why Kafka?
-
-Unlike a traditional queue (e.g. Sidekiq/Redis) where a message is deleted once consumed, Kafka stores all event logs. This means:
-
-- Multiple consumers can read the same event independently (Persistence)
-- Events can be replayed if a consumer fails
-
----
-
-## Services
-
-```
-docker compose up --build    # Start everything
-docker compose down          # Stop everything
-docker compose logs -f       # Stream logs from all services
+```bash
+docker compose exec rails env EVENTS=300 DELAY_MS=10 rails kafka:seed_events
 ```
 
+Supported env vars:
+
+- `EVENTS` (default: `120`) total events to publish
+- `DELAY_MS` (default: `25`) delay between publishes in milliseconds
+- `USER_POOL` (default: `80`) number of unique users sampled
+- `LISTING_POOL` (default: `160`) number of unique listings sampled
+- `PUBLISH_TIMEOUT` (default: `10`) timeout per publish attempt (seconds)
+
+## Useful Commands
+
+```bash
+docker compose up --build     # start everything
+docker compose down           # stop everything
+docker compose ps             # service status
+docker compose logs -f        # stream logs
+docker compose exec rails bash
+```
+
+## Testing
+
+Current test coverage includes controller-level validation for dashboard response shape and key metrics.
+
+```bash
+# inside a compatible Ruby/Bundler environment
+bin/rails test test/controllers/marketplace_events_controller_test.rb
+```
+
+## Current Limitations
+
+This repo is intentionally scoped as a POC. Not implemented yet:
+
+- Persisted `pending -> processed` lifecycle in DB (status is currently inferred for recent events)
+- True push-based live updates (WebSockets/SSE); dashboard currently uses polling
+- Production-grade charting fallback/observability strategy
+- Full E2E/system test coverage for responsive behavior
+- Formal accessibility and performance profiling pass
+
+## Next Iteration
+
+If extended toward production, I would prioritize:
+
+1. Event status lifecycle persistence + idempotency strategy
+2. Push updates with ActionCable/SSE for lower latency
+3. Stronger test pyramid (request + system + failure-mode tests)
+4. Observability: add a dedicated monitoring container stack -maybe ELK??- (for example Grafana + Loki + Prometheus), separate logs by level (`debug`, `info`, `warn`, `error`) and add alerting around consumer lag and publish failures
+5. Hardening for multi-instance deployment and auth boundaries
+
+---
 
 Made with ❤️ by Joselson
