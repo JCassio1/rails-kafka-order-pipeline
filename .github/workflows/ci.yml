@@ -166,7 +166,12 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/event_app_test
-        run: bin/rails test:system --verbose
+        run: |
+          if [ -d test/system ] && find test/system -type f -name '*_test.rb' -print -quit | grep -q .; then
+            bin/rails test:system --verbose
+          else
+            echo "No system tests found under test/system; skipping."
+          fi
 
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
