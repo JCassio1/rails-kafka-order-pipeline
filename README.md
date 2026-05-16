@@ -130,6 +130,29 @@ This repo is intentionally scoped as a POC. Not implemented yet:
 - Full E2E/system test coverage for responsive behavior
 - Formal accessibility and performance profiling pass
 
+## Performance & Scalability
+
+As the system grows to handle higher event throughput and larger datasets, the following enhancements would improve performance and scalability:
+
+### Database Indexing
+Strategic indexes on frequently queried columns (e.g., event `type`, `user_id`, `timestamp`, and status) would dramatically reduce query latency for dashboard aggregations and event lookups. Composite indexes on multi-column filters would further optimize complex queries over large event tables.
+
+### gRPC
+Replacing HTTP/JSON polling with gRPC would enable:
+- Efficient binary serialization (smaller payloads)
+- Multiplexing over HTTP/2 (lower connection overhead)
+- Better latency for real-time dashboard updates
+- Easier integration of additional services (order service, user service, etc.)
+
+### Caching Strategies
+Implementing intelligent caching layers would reduce database load and improve response times:
+- **Cache-Aside (Lazy Loading)**: Load data into cache on miss; useful for dashboard metrics and aggregations
+- **Write-Through/Write-Behind**: Keep cache synchronized with database writes; effective for frequently updated event counters
+- **TTL-based expiration**: Configure appropriate TTLs based on data freshness requirements
+- **Distributed cache**: Redis or Memcached for shared state across multiple instances
+
+Reference: [ByteByteGo: Top Caching Strategies](https://bytebytego.com/guides/what-are-the-top-caching-strategies/?_gl=1*1dq8m80*_up*MQ..*_ga*MTcwOTE3NzU5LjE3Nzg5MjkzODU.*_ga_JPXSGYZ0D5*czE3Nzg5MjkzODQkbzEkZzAkdDE3Nzg5MjkzODQkajYwJGwwJGgwJGRoMEd4WXV3aGxTZFVVVTE3blpMOWpHQ0dtQ2lGRHdqMVJn)
+
 ## Next Iteration
 
 If extended toward production, I would prioritize:
@@ -139,6 +162,7 @@ If extended toward production, I would prioritize:
 3. Stronger test pyramid (request + system + failure-mode tests)
 4. Observability: add a dedicated monitoring container stack -maybe ELK??- (for example Grafana + Loki + Prometheus), separate logs by level (`debug`, `info`, `warn`, `error`) and add alerting around consumer lag and publish failures
 5. Hardening for multi-instance deployment and auth boundaries
+6. Performance optimizations: database indexing, gRPC integration, and caching strategies
 
 ---
 
