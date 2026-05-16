@@ -104,6 +104,8 @@ jobs:
         run: |
           # Wait for PostgreSQL to be ready
           until pg_isready -h localhost -U postgres; do sleep 1; done
+          # Create the test database
+          createdb -h localhost -U postgres event_app_test
           bin/rails db:test:prepare test
 
   system-test:
@@ -142,9 +144,12 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/event_app_test
-          # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
-          # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test:system
+        run: |
+          # Wait for PostgreSQL to be ready
+          until pg_isready -h localhost -U postgres; do sleep 1; done
+          # Create the test database
+          createdb -h localhost -U postgres event_app_test
+          bin/rails db:test:prepare test:system
 
       - name: Keep screenshots from failed system tests
         uses: actions/upload-artifact@v4
