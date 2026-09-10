@@ -69,7 +69,7 @@ I owned the implementation across backend, data flow, and UI:
 ### Start the stack
 
 ```bash
-git clone https://github.com/yourname/event-stream-dashboard
+git clone <repo_url>
 cd event_app
 docker compose up --build
 ```
